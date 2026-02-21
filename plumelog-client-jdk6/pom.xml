@@ -32,7 +32,7 @@
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
-                <version>1.2.8.sec10</version>
+                <version>1.2.83</version>
              </dependency>
             <dependency>
                 <groupId>com.alibaba</groupId>
@@ -86,7 +86,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.3-pwc-1.1</version>
+                <version>3.5.3-pwc-1.2</version>
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
