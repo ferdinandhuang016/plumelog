@@ -138,8 +138,8 @@ public class ClientConfig implements InitializingBean {
     @Value("${plumelog.local.path:}")
     private String liteLogPath;
 
-    @Value("${plumelog.inside.redis.host:}")
-    private String insideRedis;
+//    @Value("${plumelog.inside.redis.host:}")
+//    private String insideRedis;
 
     @Bean(name = "rabbitMQClient")
     public RabbitMQClient initRabbitMQClient(){
@@ -169,9 +169,9 @@ public class ClientConfig implements InitializingBean {
             mgRedisDb = this.queueRedisDb;
             mgMasterName = this.queueRedisSentinelMasterName;
         }
-        if (!StringUtils.isEmpty(insideRedis)&&StringUtils.isEmpty(mgRedisHost)) {
-            mgRedisHost=this.insideRedis;
-        }
+//        if (!StringUtils.isEmpty(insideRedis)&&StringUtils.isEmpty(mgRedisHost)) {
+//            mgRedisHost=this.insideRedis;
+//        }
         logger.info("管理 redis host:{}", mgRedisHost);
         if (!StringUtils.isEmpty(mgRedisHost)) {
             if (!StringUtils.isEmpty(mgMasterName)) {
@@ -211,9 +211,9 @@ public class ClientConfig implements InitializingBean {
         mgRedisPassWord = this.queueRedisPassWord;
         mgRedisDb = this.queueRedisDb;
         mgMasterName = this.queueRedisSentinelMasterName;
-        if (!StringUtils.isEmpty(insideRedis)&&StringUtils.isEmpty(mgRedisHost)) {
-            mgRedisHost=this.insideRedis;
-        }
+//        if (!StringUtils.isEmpty(insideRedis)&&StringUtils.isEmpty(mgRedisHost)) {
+//            mgRedisHost=this.insideRedis;
+//        }
         logger.info("队列 redis host:{}", mgRedisHost);
         if (!StringUtils.isEmpty(mgRedisHost)) {
             if (!StringUtils.isEmpty(mgMasterName)) {
