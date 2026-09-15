@@ -143,7 +143,7 @@ public class ClientConfig implements InitializingBean {
 
     @Bean(name = "rabbitMQClient")
     public RabbitMQClient initRabbitMQClient(){
-        if (InitConfig.LITE_MODE_NAME.equals(this.model)) {
+        if (!InitConfig.RABBITMQ_MODE_NAME.equals(this.model)) {
             return null;
         }
         return new RabbitMQClient(rabbitMQHosts, rabbitMQPort, rabbitMQUsername, rabbitMQPwd);
