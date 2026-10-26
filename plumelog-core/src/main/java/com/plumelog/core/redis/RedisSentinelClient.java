@@ -28,6 +28,10 @@ public class RedisSentinelClient extends AbstractClient {
     private final boolean TEST_ON_BORROW = true;
 
     public RedisSentinelClient(String hosts, String masterName, String pass, int db) {
+        this(hosts, masterName, pass, db, false, false);
+    }
+
+    public RedisSentinelClient(String hosts, String masterName, String pass, int db, boolean tls, boolean tlsVerify) {
         String[] clusterHosts = hosts.split(",");
         Set<String> sentinels=new HashSet<>();
         for(int a=0;a<clusterHosts.length;a++){
@@ -38,7 +42,15 @@ public class RedisSentinelClient extends AbstractClient {
         config.setMaxIdle(MAX_IDLE);
         config.setMaxWaitMillis(MAX_WAIT);
         config.setTestOnBorrow(TEST_ON_BORROW);
-        if (pass != null && !"".equals(pass)) {
+        if (tls) {
+            Set<HostAndPort> tlsSentinels = new HashSet<>();
+            for (String sentinel : sentinels) {
+                tlsSentinels.add(HostAndPort.from(sentinel.trim()));
+            }
+            jedisSentinelPool = new JedisSentinelPool(masterName, tlsSentinels, config,
+                    RedisTlsConfig.create(pass, db, Protocol.DEFAULT_TIMEOUT, tlsVerify),
+                    RedisTlsConfig.create(pass, 0, Protocol.DEFAULT_TIMEOUT, tlsVerify));
+        } else if (pass != null && !"".equals(pass)) {
             /**
              * fix：哨兵模式下提示缺失哨兵密码的问题
              *
@@ -53,10 +65,14 @@ public class RedisSentinelClient extends AbstractClient {
     }
 
     public static RedisSentinelClient getInstance(String hosts, String masterName, String pass, int db) {
+        return getInstance(hosts, masterName, pass, db, false, false);
+    }
+
+    public static RedisSentinelClient getInstance(String hosts, String masterName, String pass, int db, boolean tls, boolean tlsVerify) {
         if (instance == null) {
             synchronized (RedisSentinelClient.class) {
                 if (instance == null) {
-                    instance = new RedisSentinelClient(hosts, masterName, pass, db);
+                    instance = new RedisSentinelClient(hosts, masterName, pass, db, tls, tlsVerify);
                 }
             }
         }

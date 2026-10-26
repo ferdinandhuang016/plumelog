@@ -49,6 +49,9 @@ plumelog.model=redis
 #队列redis地址，model配置redis集群模式，哨兵模式用逗号隔开，队列redis不支持集群模式，lite模式可以全部注释掉下面配置
 #当redis队列性能不够的时候，可以不同的项目单独配置单独的redis队列，用单独的plumelog-server去采集，公用一个管理redis
 plumelog.queue.redis.redisHost=127.0.0.1:6379
+#TLS默认关闭，开启后默认不校验证书及主机名
+plumelog.queue.redis.tls=false
+plumelog.queue.redis.tlsVerify=false
 #如果使用redis有密码,启用下面配置
 #plumelog.queue.redis.redisPassWord=123456
 #如果要切换db，redis必须要配置密码
@@ -60,6 +63,9 @@ plumelog.queue.redis.redisHost=127.0.0.1:6379
 
 #管理端redis地址 ，集群用逗号隔开，不配置将和队列公用，lite模式可以全部注释掉下面配置，管理redis单独使用的时候支持集群模式
 #plumelog.redis.redisHost=127.0.0.1:6379
+#管理Redis未配置地址时，沿用队列Redis的TLS配置
+plumelog.redis.tls=false
+plumelog.redis.tlsVerify=false
 #如果使用redis有密码,启用下面配置
 #plumelog.redis.redisPassWord=123456
 #plumelog.redis.redisDb=0
@@ -423,6 +429,8 @@ RedisAppender
 | appName  | 自定义应用名称 |
 | redisHost  | redis地址，哨兵模式多个用逗号隔开 |
 | redisAuth  | redis密码 |
+| redisTls | 是否启用Redis TLS，默认false |
+| redisTlsVerify | TLS是否校验证书及主机名，默认false；仅redisTls=true时生效 |
 | redisDb  | redis db 如果要切换db，redis必须要配置密码|
 | model  |sentinel 哨兵模式,standalone 单机模式|
 | masterName  |哨兵模式需要配置哨兵的masterName|
@@ -431,6 +439,34 @@ RedisAppender
 | logQueueSize  | （3.1.2）缓冲队列数量大小，默认10000，太小可能丢日志，太大容易内存溢出，根据实际情况，如果项目内存足够可以设置到100000+ |
 | compressor  | （3.4）是否开启日志压缩，默认false |
 | env  | （3.5）环境 默认是default|
+
+Redis TLS适用于主工程的Logback、Log4j、Log4j2客户端，以及server的单机、集群和哨兵连接。开启哨兵模式TLS后，哨兵节点和Redis数据节点均使用TLS。地址仍填写`host:port`，端口应填写Redis或哨兵的TLS监听端口。
+
+服务端通过`plumelog.queue.redis.tls=true`启用队列Redis TLS，通过`plumelog.redis.tls=true`启用管理Redis TLS；两者的`tlsVerify`默认均为`false`。如需校验证书及主机名，将对应`tlsVerify`设为`true`，使用JVM信任库。
+
+客户端在原有RedisAppender配置中增加以下配置即可开启TLS：
+
+```xml
+<!-- Logback：RedisAppender内部 -->
+<redisTls>true</redisTls>
+<redisTlsVerify>false</redisTlsVerify>
+```
+
+```properties
+# Log4j：L为RedisAppender名称
+log4j.appender.L.redisTls=true
+log4j.appender.L.redisTlsVerify=false
+```
+
+```xml
+<!-- Log4j2：RedisAppender属性 -->
+<RedisAppender name="redisAppender" appName="myApp" redisHost="redis.example.com"
+               redisPort="6380" redisTls="true" redisTlsVerify="false"/>
+```
+
+ES继续通过`plumelog.es.esHosts`中的`https://`启用TLS；不带协议的地址默认使用HTTP。HTTPS默认使用`plumelog.es.trustSelfSigned=true`和`plumelog.es.hostnameVerification=false`跳过证书及主机名校验。
+
+主工程Redis依赖已更新为Jedis 3.6.3，使用方如自行管理Jedis版本，应同步更新以支持TLS配置。
 
 KafkaAppender
 

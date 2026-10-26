@@ -33,6 +33,8 @@ public class RedisAppender extends AppenderBase<ILoggingEvent> {
     private String redisHost;
     private String redisPort;
     private String redisAuth;
+    private boolean redisTls = false;
+    private boolean redisTlsVerify = false;
     private String model = "standalone";
     private String masterName;
     private int redisDb = 0;
@@ -85,6 +87,22 @@ public class RedisAppender extends AppenderBase<ILoggingEvent> {
 
     public void setRedisAuth(String redisAuth) {
         this.redisAuth = redisAuth;
+    }
+
+    public boolean isRedisTls() {
+        return redisTls;
+    }
+
+    public void setRedisTls(boolean redisTls) {
+        this.redisTls = redisTls;
+    }
+
+    public boolean isRedisTlsVerify() {
+        return redisTlsVerify;
+    }
+
+    public void setRedisTlsVerify(boolean redisTlsVerify) {
+        this.redisTlsVerify = redisTlsVerify;
     }
 
     public int getRedisDb() {
@@ -179,7 +197,7 @@ public class RedisAppender extends AppenderBase<ILoggingEvent> {
         }
         if (this.redisClient == null) {
             if (StringUtils.isNotEmpty(this.masterName)) {
-                this.redisClient = RedisSentinelClient.getInstance(this.redisHost, this.masterName, this.redisAuth, this.redisDb);
+                this.redisClient = RedisSentinelClient.getInstance(this.redisHost, this.masterName, this.redisAuth, this.redisDb, this.redisTls, this.redisTlsVerify);
             } else {
                 int port = 6379;
                 String ip = "127.0.0.1";
@@ -198,7 +216,7 @@ public class RedisAppender extends AppenderBase<ILoggingEvent> {
                     ip = this.redisHost;
                     port = Integer.parseInt(this.redisPort);
                 }
-                this.redisClient = RedisClient.getInstance(ip, port, this.redisAuth, this.redisDb);
+                this.redisClient = RedisClient.getInstance(ip, port, this.redisAuth, this.redisDb, this.redisTls, this.redisTlsVerify);
             }
         }
         MessageAppenderFactory.initQueue(this.logQueueSize);

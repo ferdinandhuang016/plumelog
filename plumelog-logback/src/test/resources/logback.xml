@@ -31,6 +31,8 @@
     <appender name="plumelog" class="com.plumelog.logback.appender.RedisAppender">
         <appName>plumelog-logback</appName>
         <redisHost>127.0.0.1:7979</redisHost>
+        <redisTls>false</redisTls>
+        <redisTlsVerify>false</redisTlsVerify>
         <!--        <redisAuth>${plumelog.redisAuth}</redisAuth>-->
         <env>pro</env>
     </appender>

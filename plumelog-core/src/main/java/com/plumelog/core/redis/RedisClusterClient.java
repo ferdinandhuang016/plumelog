@@ -28,6 +28,10 @@ public class RedisClusterClient extends AbstractClient {
     private final boolean TEST_ON_BORROW = true;
 
     public RedisClusterClient(String hosts, String pass) {
+        this(hosts, pass, false, false);
+    }
+
+    public RedisClusterClient(String hosts, String pass, boolean tls, boolean tlsVerify) {
         String[] clusterHosts = hosts.split(",");
         Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
         for (String hostAndPort : clusterHosts) {
@@ -39,7 +43,9 @@ public class RedisClusterClient extends AbstractClient {
         config.setMaxIdle(MAX_IDLE);
         config.setMaxWaitMillis(MAX_WAIT);
         config.setTestOnBorrow(TEST_ON_BORROW);
-        if (pass != null && !"".equals(pass)) {
+        if (tls) {
+            jedisCluster = new JedisCluster(jedisClusterNodes, RedisTlsConfig.create(pass, 0, 200, tlsVerify), 1, config);
+        } else if (pass != null && !"".equals(pass)) {
             jedisCluster = new JedisCluster(jedisClusterNodes, 200, 200, 1, pass, config);
         } else {
             jedisCluster = new JedisCluster(jedisClusterNodes, 200, 200, 1, config);
@@ -47,10 +53,14 @@ public class RedisClusterClient extends AbstractClient {
     }
 
     public static RedisClusterClient getInstance(String hosts, String pass) {
+        return getInstance(hosts, pass, false, false);
+    }
+
+    public static RedisClusterClient getInstance(String hosts, String pass, boolean tls, boolean tlsVerify) {
         if (instance == null) {
             synchronized (RedisClusterClient.class) {
                 if (instance == null) {
-                    instance = new RedisClusterClient(hosts, pass);
+                    instance = new RedisClusterClient(hosts, pass, tls, tlsVerify);
                 }
             }
         }

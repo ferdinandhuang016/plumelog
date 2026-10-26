@@ -69,6 +69,15 @@ public class RedisAppender extends AbstractAppender {
         this.masterName = masterName;
     }
 
+    public static RedisAppender createAppender(String name, String appName, String env, String redisHost,
+                                               String redisPort, String redisAuth, int maxCount, String runModel,
+                                               String expand, int redisDb, int logQueueSize, int threadPoolSize,
+                                               boolean compressor, String model, String masterName,
+                                               Layout<? extends Serializable> layout, Filter filter) {
+        return createAppender(name, appName, env, redisHost, redisPort, redisAuth, false, false, maxCount,
+                runModel, expand, redisDb, logQueueSize, threadPoolSize, compressor, model, masterName, layout, filter);
+    }
+
     @PluginFactory
     public static RedisAppender createAppender(
             @PluginAttribute("name") String name,
@@ -77,6 +86,8 @@ public class RedisAppender extends AbstractAppender {
             @PluginAttribute("redisHost") String redisHost,
             @PluginAttribute("redisPort") String redisPort,
             @PluginAttribute("redisAuth") String redisAuth,
+            @PluginAttribute(value = "redisTls", defaultBoolean = false) boolean redisTls,
+            @PluginAttribute(value = "redisTlsVerify", defaultBoolean = false) boolean redisTlsVerify,
             @PluginAttribute("maxCount") int maxCount,
             @PluginAttribute("runModel") String runModel,
             @PluginAttribute("expand") String expand,
@@ -101,7 +112,7 @@ public class RedisAppender extends AbstractAppender {
             model = "standalone";
         }
         if (StringUtils.isNotEmpty(masterName)) {
-            redisClient = RedisSentinelClient.getInstance(redisHost, masterName, redisAuth, redisDb);
+            redisClient = RedisSentinelClient.getInstance(redisHost, masterName, redisAuth, redisDb, redisTls, redisTlsVerify);
         } else {
             int port = 6379;
             String ip = "127.0.0.1";
@@ -120,7 +131,7 @@ public class RedisAppender extends AbstractAppender {
                 ip = redisHost;
                 port = Integer.parseInt(redisPort);
             }
-            redisClient = RedisClient.getInstance(ip, port, redisAuth, redisDb);
+            redisClient = RedisClient.getInstance(ip, port, redisAuth, redisDb, redisTls, redisTlsVerify);
         }
         if (maxCount == 0) {
             maxCount = 100;

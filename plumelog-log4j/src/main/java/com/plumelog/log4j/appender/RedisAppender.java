@@ -33,6 +33,8 @@ public class RedisAppender extends AppenderSkeleton {
     private String redisHost;
     private String redisPort;
     private String redisAuth;
+    private boolean redisTls = false;
+    private boolean redisTlsVerify = false;
     private int redisDb = 0;
     private String runModel;
     private int maxCount = 100;
@@ -68,6 +70,22 @@ public class RedisAppender extends AppenderSkeleton {
 
     public void setRedisAuth(String redisAuth) {
         this.redisAuth = redisAuth;
+    }
+
+    public boolean isRedisTls() {
+        return redisTls;
+    }
+
+    public void setRedisTls(boolean redisTls) {
+        this.redisTls = redisTls;
+    }
+
+    public boolean isRedisTlsVerify() {
+        return redisTlsVerify;
+    }
+
+    public void setRedisTlsVerify(boolean redisTlsVerify) {
+        this.redisTlsVerify = redisTlsVerify;
     }
 
     public int getRedisDb() {
@@ -151,7 +169,7 @@ public class RedisAppender extends AppenderSkeleton {
             MessageAppenderFactory.initQueue(this.logQueueSize);
             if (StringUtils.isNotEmpty(this.masterName)) {
                 this.redisClient = RedisSentinelClient
-                        .getInstance(this.redisHost, this.masterName, this.redisAuth, this.redisDb);
+                        .getInstance(this.redisHost, this.masterName, this.redisAuth, this.redisDb, this.redisTls, this.redisTlsVerify);
             } else {
                 int port = 6379;
                 String ip = "127.0.0.1";
@@ -170,7 +188,7 @@ public class RedisAppender extends AppenderSkeleton {
                     ip = this.redisHost;
                     port = Integer.parseInt(this.redisPort);
                 }
-                this.redisClient = RedisClient.getInstance(ip, port, this.redisAuth, this.redisDb);
+                this.redisClient = RedisClient.getInstance(ip, port, this.redisAuth, this.redisDb, this.redisTls, this.redisTlsVerify);
             }
 
             // 当多并发情况下若redisClient为空时会多次执行以下代码，因此增加是否已初始化的判断

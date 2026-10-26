@@ -105,6 +105,10 @@ public class ClientConfig implements InitializingBean {
     private String redisPassWord;
     @Value("${plumelog.redis.redisDb:0}")
     private int redisDb = 0;
+    @Value("${plumelog.redis.tls:false}")
+    private boolean redisTls = false;
+    @Value("${plumelog.redis.tlsVerify:false}")
+    private boolean redisTlsVerify = false;
     @Value("${plumelog.redis.sentinel.masterName:}")
     private String redisSentinelMasterName;
 
@@ -129,6 +133,10 @@ public class ClientConfig implements InitializingBean {
     private String queueRedisPassWord;
     @Value("${plumelog.queue.redis.redisDb:0}")
     private int queueRedisDb = 0;
+    @Value("${plumelog.queue.redis.tls:false}")
+    private boolean queueRedisTls = false;
+    @Value("${plumelog.queue.redis.tlsVerify:false}")
+    private boolean queueRedisTlsVerify = false;
 
     @Value("${admin.log.keepDays:0}")
     private int keepDays;
@@ -169,16 +177,18 @@ public class ClientConfig implements InitializingBean {
             mgRedisDb = this.queueRedisDb;
             mgMasterName = this.queueRedisSentinelMasterName;
         }
+        boolean mgRedisTls = StringUtils.isEmpty(this.redisHost) ? this.queueRedisTls : this.redisTls;
+        boolean mgRedisTlsVerify = StringUtils.isEmpty(this.redisHost) ? this.queueRedisTlsVerify : this.redisTlsVerify;
 //        if (!StringUtils.isEmpty(insideRedis)&&StringUtils.isEmpty(mgRedisHost)) {
 //            mgRedisHost=this.insideRedis;
 //        }
         logger.info("管理 redis host:{}", mgRedisHost);
         if (!StringUtils.isEmpty(mgRedisHost)) {
             if (!StringUtils.isEmpty(mgMasterName)) {
-                return new RedisSentinelClient(mgRedisHost, mgMasterName, mgRedisPassWord, mgRedisDb);
+                return new RedisSentinelClient(mgRedisHost, mgMasterName, mgRedisPassWord, mgRedisDb, mgRedisTls, mgRedisTlsVerify);
             }
             if (mgRedisHost.split(",").length > 1) {
-                return new RedisClusterClient(mgRedisHost, mgRedisPassWord);
+                return new RedisClusterClient(mgRedisHost, mgRedisPassWord, mgRedisTls, mgRedisTlsVerify);
             } else {
                 String[] hs = mgRedisHost.split(":");
                 int port = 6379;
@@ -190,7 +200,7 @@ public class ClientConfig implements InitializingBean {
                     logger.error("redis config error! please check the application.properties(plumelog.queue.redis.redisHost) ");
                     return null;
                 }
-                return new RedisClient(ip, port, mgRedisPassWord, mgRedisDb);
+                return new RedisClient(ip, port, mgRedisPassWord, mgRedisDb, mgRedisTls, mgRedisTlsVerify);
             }
         }
         logger.error("找不到redis配置项！请检查配置！");
@@ -217,10 +227,10 @@ public class ClientConfig implements InitializingBean {
         logger.info("队列 redis host:{}", mgRedisHost);
         if (!StringUtils.isEmpty(mgRedisHost)) {
             if (!StringUtils.isEmpty(mgMasterName)) {
-                return new RedisSentinelClient(mgRedisHost, mgMasterName, mgRedisPassWord, mgRedisDb);
+                return new RedisSentinelClient(mgRedisHost, mgMasterName, mgRedisPassWord, mgRedisDb, queueRedisTls, queueRedisTlsVerify);
             }
             if (mgRedisHost.split(",").length > 1) {
-                return new RedisClusterClient(mgRedisHost, mgRedisPassWord);
+                return new RedisClusterClient(mgRedisHost, mgRedisPassWord, queueRedisTls, queueRedisTlsVerify);
             } else {
                 String[] hs = mgRedisHost.split(":");
                 int port = 6379;
@@ -232,7 +242,7 @@ public class ClientConfig implements InitializingBean {
                     logger.error("redis config error! please check the application.properties(plumelog.queue.redis.redisHost) ");
                     return null;
                 }
-                return new RedisClient(ip, port, mgRedisPassWord, mgRedisDb);
+                return new RedisClient(ip, port, mgRedisPassWord, mgRedisDb, queueRedisTls, queueRedisTlsVerify);
             }
         }
         logger.error("找不到redis配置项！请检查配置！");

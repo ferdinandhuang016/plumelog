@@ -31,12 +31,18 @@ public class RedisClient extends AbstractClient {
 
 
     public RedisClient(String host, int port, String pass, int db) {
+        this(host, port, pass, db, false, false);
+    }
+
+    public RedisClient(String host, int port, String pass, int db, boolean tls, boolean tlsVerify) {
         JedisPoolConfig config = new JedisPoolConfig();
         config.setMaxTotal(MAX_ACTIVE);
         config.setMaxIdle(MAX_IDLE);
         config.setMaxWaitMillis(MAX_WAIT);
         config.setTestOnBorrow(TEST_ON_BORROW);
-        if (pass != null && !"".equals(pass)) {
+        if (tls) {
+            jedisPool = new JedisPool(config, new HostAndPort(host, port), RedisTlsConfig.create(pass, db, TIMEOUT, tlsVerify));
+        } else if (pass != null && !"".equals(pass)) {
             jedisPool = new JedisPool(config, host, port, TIMEOUT, pass, db);
         } else {
             jedisPool = new JedisPool(config, host, port, TIMEOUT);
@@ -44,10 +50,14 @@ public class RedisClient extends AbstractClient {
     }
 
     public static RedisClient getInstance(String host, int port, String pass, int db) {
+        return getInstance(host, port, pass, db, false, false);
+    }
+
+    public static RedisClient getInstance(String host, int port, String pass, int db, boolean tls, boolean tlsVerify) {
         if (instance == null) {
             synchronized (RedisClient.class) {
                 if (instance == null) {
-                    instance = new RedisClient(host, port, pass, db);
+                    instance = new RedisClient(host, port, pass, db, tls, tlsVerify);
                 }
             }
         }

@@ -33,8 +33,10 @@ public class WebConfiguration implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         List<String> excludePath = new ArrayList<>();
         excludePath.add("/login");
+        excludePath.add("/plumelog/login");
         excludePath.add("/plumelogServer/login");
         excludePath.add("/logout");
+        excludePath.add("/plumelog/logout");
         excludePath.add("/plumelogServer/logout");
         registry.addInterceptor(loginCheckInterceptor()).addPathPatterns("/**")
                 .excludePathPatterns(excludePath);
